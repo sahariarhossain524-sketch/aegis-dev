@@ -48,7 +48,8 @@ if not _raw_secret:
 JWT_SECRET: str = _raw_secret
 
 JWT_ALGORITHM: str = "HS256"
-ACCESS_TOKEN_TTL_SECONDS: int = int(os.getenv("ACCESS_TOKEN_TTL", "3600"))
+_raw_ttl = (os.getenv("ACCESS_TOKEN_TTL") or "").strip()
+ACCESS_TOKEN_TTL_SECONDS: int = int(_raw_ttl) if _raw_ttl.isdigit() else 3600
 
 # ---------------------------------------------------------------------------
 # FIX TD-02: PBKDF2-HMAC-SHA256 with NIST-recommended iteration count.
