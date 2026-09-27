@@ -1,0 +1,8 @@
+[project]
+name = "aegis-dev"
+version = "2.0.0"
+description = "AegisDev: Autonomous Multi-Agent Code Auditor, Self-Healing QA & Developer Onboarding Engine"
+requires-python = ">=3.12"
+
+[tool.vercel]
+entrypoint = "main:app"
