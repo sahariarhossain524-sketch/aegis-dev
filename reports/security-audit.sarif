@@ -1,0 +1,274 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "AegisDev Security Auditor",
+          "version": "2.0.0",
+          "informationUri": "https://github.com/your-org/aegisdev",
+          "organization": "AegisDev / IBM Bob 2.0 Hackathon",
+          "rules": [
+            {
+              "id": "AEGIS-TD-01",
+              "name": "HardcodedCredential",
+              "shortDescription": { "text": "Hardcoded JWT secret fallback (CWE-798)" },
+              "fullDescription": { "text": "JWT_SECRET falls back to a literal string when the environment variable is absent. Any deployment without the env var uses a publicly known secret, making all tokens forgeable." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/798.html",
+              "properties": { "tags": ["security", "CWE-798", "OWASP-ASVS-2.10.4", "severity:critical"] },
+              "defaultConfiguration": { "level": "error" }
+            },
+            {
+              "id": "AEGIS-TD-02",
+              "name": "WeakPasswordHash",
+              "shortDescription": { "text": "SHA-256 used for password storage (CWE-328)" },
+              "fullDescription": { "text": "Plain SHA-256 is a fast, general-purpose hash. It is trivially brute-forceable with GPUs/ASICs. OWASP ASVS 2.4.1 requires an adaptive, salted algorithm such as bcrypt (cost ≥ 12), scrypt, or Argon2." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/328.html",
+              "properties": { "tags": ["security", "CWE-328", "OWASP-ASVS-2.4.1", "severity:critical"] },
+              "defaultConfiguration": { "level": "error" }
+            },
+            {
+              "id": "AEGIS-TD-03",
+              "name": "MissingRefreshTokenRotation",
+              "shortDescription": { "text": "No refresh-token mechanism — tokens cannot be revoked (CWE-613)" },
+              "fullDescription": { "text": "Only short-lived access tokens are issued. There is no refresh-token rotation, so compromised tokens remain valid until expiry with no revocation path." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/613.html",
+              "properties": { "tags": ["security", "CWE-613", "OWASP-ASVS-3.3.1", "severity:high"] },
+              "defaultConfiguration": { "level": "warning" }
+            },
+            {
+              "id": "AEGIS-TD-04",
+              "name": "InMemoryDataStore",
+              "shortDescription": { "text": "User data stored in a plain in-memory dict (CWE-312)" },
+              "fullDescription": { "text": "All user records live in a module-level dict. Data is lost on process restart, the store is not thread-safe under concurrent writes, and there is no durability or backup strategy." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/312.html",
+              "properties": { "tags": ["reliability", "CWE-312", "severity:high"] },
+              "defaultConfiguration": { "level": "warning" }
+            },
+            {
+              "id": "AEGIS-TD-05",
+              "name": "TimingAttackVulnerability",
+              "shortDescription": { "text": "Non-constant-time password comparison enables timing oracle (CWE-208)" },
+              "fullDescription": { "text": "The password comparison uses Python's != operator, which short-circuits on the first differing byte. A remote attacker can exploit the timing difference to determine whether a username exists and progressively recover the hash." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/208.html",
+              "properties": { "tags": ["security", "CWE-208", "OWASP-ASVS-2.1.11", "severity:high"] },
+              "defaultConfiguration": { "level": "warning" }
+            },
+            {
+              "id": "AEGIS-TD-06",
+              "name": "InMemoryResourceStore",
+              "shortDescription": { "text": "Resource data stored in a plain in-memory dict (CWE-312)" },
+              "fullDescription": { "text": "Resource records live in a module-level dict identical to the user store problem. No persistence, no thread-safety guarantees." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/312.html",
+              "properties": { "tags": ["reliability", "CWE-312", "severity:high"] },
+              "defaultConfiguration": { "level": "warning" }
+            },
+            {
+              "id": "AEGIS-TD-07",
+              "name": "UnsanitisedQueryParameter",
+              "shortDescription": { "text": "Search query parameter passed unsanitised (CWE-943 / CWE-89)" },
+              "fullDescription": { "text": "The `search` query parameter is used directly in a string-contains check without length capping or allow-list validation. If this logic is later ported to a raw SQL backend it becomes a direct injection vector (CWE-89). Even in-memory, a ReDoS-triggering regex or excessively long string would degrade service." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/943.html",
+              "properties": { "tags": ["security", "CWE-943", "CWE-89", "OWASP-ASVS-5.3.4", "severity:medium"] },
+              "defaultConfiguration": { "level": "note" }
+            },
+            {
+              "id": "AEGIS-TD-08",
+              "name": "CORSWildcard",
+              "shortDescription": { "text": "CORS allow_origins set to wildcard '*' (CWE-942)" },
+              "fullDescription": { "text": "Allowing all origins disables the browser's same-origin protection. Combined with allow_credentials=True this is an OWASP-recognised misconfiguration that enables cross-site request forgery from any origin." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/942.html",
+              "properties": { "tags": ["security", "CWE-942", "OWASP-ASVS-14.4.1", "severity:medium"] },
+              "defaultConfiguration": { "level": "note" }
+            },
+            {
+              "id": "AEGIS-TD-09",
+              "name": "VerboseErrorDisclosure",
+              "shortDescription": { "text": "Raw exception message returned to HTTP client (CWE-209)" },
+              "fullDescription": { "text": "The global exception handler serialises str(exc) directly into the 500 response body. Internal error details — including file paths, variable names, and potentially sensitive values — are leaked to unauthenticated callers." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/209.html",
+              "properties": { "tags": ["security", "CWE-209", "OWASP-ASVS-7.4.1", "severity:medium"] },
+              "defaultConfiguration": { "level": "note" }
+            },
+            {
+              "id": "AEGIS-TD-10",
+              "name": "WeakPasswordPolicy",
+              "shortDescription": { "text": "Password complexity not enforced at schema validation layer (CWE-521)" },
+              "fullDescription": { "text": "UserRegisterRequest accepts any string ≥ 8 characters as a password. OWASP ASVS 2.1 requires at least one uppercase letter, one digit, and one special character to prevent trivially guessable passwords." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/521.html",
+              "properties": { "tags": ["security", "CWE-521", "OWASP-ASVS-2.1.1", "severity:medium"] },
+              "defaultConfiguration": { "level": "note" }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "AEGIS-TD-01",
+          "level": "error",
+          "message": { "text": "JWT_SECRET has a hard-coded fallback value 'aegisdev-super-secret-do-not-use-in-prod'. Any deployment missing the JWT_SECRET env var will sign tokens with a publicly known key." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/services/auth_service.py" },
+                "region": { "startLine": 39, "startColumn": 1, "endLine": 39, "endColumn": 87 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td01-auth-service-39" }
+        },
+        {
+          "ruleId": "AEGIS-TD-02",
+          "level": "error",
+          "message": { "text": "hashlib.sha256 is used to hash passwords. SHA-256 executes in nanoseconds per attempt on commodity hardware; an attacker with the hash database can exhaust common passwords in seconds." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/services/auth_service.py" },
+                "region": { "startLine": 54, "startColumn": 5, "endLine": 59, "endColumn": 50 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td02-auth-service-54" }
+        },
+        {
+          "ruleId": "AEGIS-TD-03",
+          "level": "warning",
+          "message": { "text": "authenticate_user() issues only an access token. There is no refresh-token endpoint, no token revocation list, and no mechanism to invalidate a compromised session before the TTL expires." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/services/auth_service.py" },
+                "region": { "startLine": 62, "startColumn": 1, "endLine": 77, "endColumn": 2 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td03-auth-service-62" }
+        },
+        {
+          "ruleId": "AEGIS-TD-04",
+          "level": "warning",
+          "message": { "text": "_USER_STORE is a plain module-level dict. Concurrent writes under an async ASGI server (with multiple workers or threads) are not protected by a lock, and all data is lost when the process restarts." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/services/auth_service.py" },
+                "region": { "startLine": 47, "startColumn": 1, "endLine": 47, "endColumn": 44 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td04-auth-service-47" }
+        },
+        {
+          "ruleId": "AEGIS-TD-05",
+          "level": "warning",
+          "message": { "text": "user.hashed_password != _hash_password(req.password) uses Python's built-in inequality operator which is not constant-time. A remote timing oracle attack can enumerate valid usernames." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/services/auth_service.py" },
+                "region": { "startLine": 124, "startColumn": 9, "endLine": 124, "endColumn": 70 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td05-auth-service-124" }
+        },
+        {
+          "ruleId": "AEGIS-TD-06",
+          "level": "warning",
+          "message": { "text": "_RESOURCE_STORE is a plain module-level dict with identical persistence and concurrency problems as _USER_STORE." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/controllers/data_controller.py" },
+                "region": { "startLine": 30, "startColumn": 1, "endLine": 30, "endColumn": 44 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td06-data-controller-30" }
+        },
+        {
+          "ruleId": "AEGIS-TD-07",
+          "level": "note",
+          "message": { "text": "The `search` query parameter has no length cap or character allow-list and is interpolated directly into a string-contains expression. If later ported to SQL this is a direct injection point." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/controllers/data_controller.py" },
+                "region": { "startLine": 110, "startColumn": 13, "endLine": 112, "endColumn": 61 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td07-data-controller-110" }
+        },
+        {
+          "ruleId": "AEGIS-TD-08",
+          "level": "note",
+          "message": { "text": "CORSMiddleware is configured with allow_origins=['*'] and allow_credentials=True. This combination is explicitly disallowed by the CORS specification and enables cross-origin credential theft." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/main.py" },
+                "region": { "startLine": 42, "startColumn": 1, "endLine": 48, "endColumn": 2 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td08-main-42" }
+        },
+        {
+          "ruleId": "AEGIS-TD-09",
+          "level": "note",
+          "message": { "text": "The global exception handler returns str(exc) in the HTTP response body, leaking internal implementation details, file paths, and potentially sensitive runtime state to all callers." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/main.py" },
+                "region": { "startLine": 76, "startColumn": 9, "endLine": 79, "endColumn": 10 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td09-main-76" }
+        },
+        {
+          "ruleId": "AEGIS-TD-10",
+          "level": "note",
+          "message": { "text": "UserRegisterRequest.password accepts any string ≥ 8 characters. No complexity rule (uppercase, digit, special character) is enforced, permitting trivially weak passwords." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/models/user.py" },
+                "region": { "startLine": 113, "startColumn": 5, "endLine": 113, "endColumn": 45 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td10-models-user-113" }
+        }
+      ],
+      "artifacts": [
+        { "location": { "uri": "src/main.py" } },
+        { "location": { "uri": "src/services/auth_service.py" } },
+        { "location": { "uri": "src/controllers/auth_controller.py" } },
+        { "location": { "uri": "src/controllers/data_controller.py" } },
+        { "location": { "uri": "src/models/user.py" } }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "toolExecutionNotifications": [],
+          "startTimeUtc": "2025-01-01T00:00:00Z",
+          "endTimeUtc": "2025-01-01T00:00:01Z",
+          "commandLine": "aegisdev-auditor scan src/",
+          "properties": {
+            "auditStandard": "OWASP ASVS 4.0",
+            "findingsCount": 10,
+            "criticalCount": 2,
+            "highCount": 3,
+            "mediumCount": 3,
+            "lowCount": 2
+          }
+        }
+      ]
+    }
+  ]
+}
