@@ -10,4 +10,28 @@ if BASE_DIR not in sys.path:
 os.environ.setdefault("ALLOWED_ORIGINS", "*")
 os.environ.setdefault("APP_ENV", "production")
 
-from src.main import app
+try:
+    from src.main import app
+except Exception as exc:  # pragma: no cover
+    import traceback
+    from fastapi import FastAPI
+    from fastapi.responses import JSONResponse
+
+    err_trace = traceback.format_exc()
+    app = FastAPI(title="AegisDev Vercel Bootstrapper")
+
+    @app.api_route("/{path:path}", methods=["GET", "POST", "PATCH", "DELETE"])
+    async def catch_all(path: str):
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "startup_error",
+                "exception": f"{type(exc).__name__}: {exc}",
+                "traceback": err_trace,
+                "has_jwt_secret": bool(os.getenv("JWT_SECRET")),
+                "env_keys": [
+                    k for k in os.environ.keys()
+                    if not k.startswith("npm_") and not k.startswith("_")
+                ],
+            },
+        )
