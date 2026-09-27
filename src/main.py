@@ -470,7 +470,7 @@ async def root(request: Request):
                     <li>❌ <strong>CWE-269:</strong> Self-registration allowed self-assigned Admin role</li>
                     <li>❌ <strong>CWE-613:</strong> No token revocation; compromised tokens valid till TTL</li>
                     <li>❌ <strong>CWE-208:</strong> Timing attack leak on credential verification</li>
-                    <li>❌ <strong>CWE-942:</strong> Overly permissive CORS wildcard (allow_origins=["*"])</li>
+                    <li>❌ <strong>CWE-942:</strong> Overly permissive CORS wildcard origin (`*`)</li>
                     <li>❌ <strong>CWE-362:</strong> Race conditions in user and resource in-memory stores</li>
                     <li>❌ <strong>Zero Coverage:</strong> No automated tests or regression verification</li>
                 </ul>
