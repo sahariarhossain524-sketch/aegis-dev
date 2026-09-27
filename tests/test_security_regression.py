@@ -426,6 +426,7 @@ class TestTD08CORSWildcard:
             if "CORS" in cls_name:
                 cors_middleware = mw
                 break
+        assert cors_middleware is not None, "CORS middleware must be registered on the app"
 
         # Also check via middleware_stack attributes as fallback
         from starlette.middleware.cors import CORSMiddleware  # noqa: PLC0415

@@ -27,7 +27,6 @@ from src.models.user import (
     UserLoginRequest,
     UserRecord,
     UserRegisterRequest,
-    UserRole,
 )
 
 logger = logging.getLogger("aegisdev.auth_service")

@@ -14,7 +14,6 @@ from __future__ import annotations
 import logging
 import re
 import threading
-import uuid
 from datetime import datetime
 from typing import Annotated, Optional
 
