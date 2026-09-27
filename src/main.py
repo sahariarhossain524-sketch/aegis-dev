@@ -18,6 +18,13 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 
+# ---------------------------------------------------------------------------
+# Serverless cloud environment fallback
+# ---------------------------------------------------------------------------
+if not os.getenv("JWT_SECRET"):
+    import secrets
+    os.environ["JWT_SECRET"] = os.getenv("SERVERLESS_JWT_KEY", secrets.token_hex(32))
+
 from src.controllers.auth_controller import router as auth_router
 from src.controllers.data_controller import router as data_router
 
