@@ -8,6 +8,8 @@ Security posture (post-AegisDev audit):
             ID; full detail logged server-side only.
 """
 
+from __future__ import annotations
+
 import os
 import time
 import uuid
