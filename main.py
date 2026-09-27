@@ -12,6 +12,13 @@ if BASE_DIR not in sys.path:
 os.environ.setdefault("ALLOWED_ORIGINS", "*")
 os.environ.setdefault("APP_ENV", "production")
 
+_jwt_sec = os.getenv("JWT_SECRET", "").strip().strip("'\"")
+if _jwt_sec:
+    os.environ["JWT_SECRET"] = _jwt_sec
+elif os.getenv("VERCEL"):
+    import secrets
+    os.environ["JWT_SECRET"] = secrets.token_hex(32)
+
 from src.main import app
 
 if __name__ == "__main__":
