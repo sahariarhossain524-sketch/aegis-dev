@@ -3,6 +3,14 @@ name = "aegis-dev"
 version = "2.0.0"
 description = "AegisDev: Autonomous Multi-Agent Code Auditor, Self-Healing QA & Developer Onboarding Engine"
 requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn>=0.29.0",
+    "pydantic>=2.7.1",
+    "email-validator>=2.1.1",
+    "PyJWT>=2.8.0",
+    "python-dotenv>=1.0.1",
+]
 
 [tool.vercel]
 entrypoint = "main:app"
