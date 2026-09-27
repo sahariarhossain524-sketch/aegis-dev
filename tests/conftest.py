@@ -93,26 +93,23 @@ ALICE_CREDS = {
     "username": "alice",
     "email": "alice@example.com",
     "password": "SecurePass1!",
-    "role": "developer",
 }
 
 BOB_ADMIN_CREDS = {
     "username": "bobadmin",
     "email": "bob@example.com",
     "password": "AdminPass1!",
-    "role": "admin",
 }
 
 CHARLIE_VIEWER_CREDS = {
     "username": "charlie",
     "email": "charlie@example.com",
     "password": "ViewerPass1!",
-    "role": "viewer",
 }
 
 
 def _register_and_login(client: TestClient, creds: dict) -> dict:
-    """Register a user, log in, and return profile + token."""
+    """Register a developer user, log in, and return profile + token."""
     reg_resp = client.post("/auth/register", json=creds)
     assert reg_resp.status_code == 201, f"Registration failed: {reg_resp.json()}"
     profile = reg_resp.json()
@@ -135,14 +132,42 @@ def alice(client: TestClient) -> dict:
 
 @pytest.fixture()
 def bob_admin(client: TestClient) -> dict:
-    """Pre-registered admin user with a valid access token."""
-    return _register_and_login(client, BOB_ADMIN_CREDS)
+    """Bootstrap admin user seeded via internal API with a valid access token."""
+    from src.services import auth_service
+    from src.models.user import UserRole
+    user = auth_service.seed_user(
+        BOB_ADMIN_CREDS["username"],
+        BOB_ADMIN_CREDS["email"],
+        BOB_ADMIN_CREDS["password"],
+        UserRole.ADMIN,
+    )
+    login_resp = client.post(
+        "/auth/login",
+        json={"username": BOB_ADMIN_CREDS["username"], "password": BOB_ADMIN_CREDS["password"]},
+    )
+    assert login_resp.status_code == 200
+    token_data = login_resp.json()
+    return {**user.to_dict(), "access_token": token_data["access_token"]}
 
 
 @pytest.fixture()
 def charlie_viewer(client: TestClient) -> dict:
-    """Pre-registered viewer user with a valid access token."""
-    return _register_and_login(client, CHARLIE_VIEWER_CREDS)
+    """Bootstrap viewer user seeded via internal API with a valid access token."""
+    from src.services import auth_service
+    from src.models.user import UserRole
+    user = auth_service.seed_user(
+        CHARLIE_VIEWER_CREDS["username"],
+        CHARLIE_VIEWER_CREDS["email"],
+        CHARLIE_VIEWER_CREDS["password"],
+        UserRole.VIEWER,
+    )
+    login_resp = client.post(
+        "/auth/login",
+        json={"username": CHARLIE_VIEWER_CREDS["username"], "password": CHARLIE_VIEWER_CREDS["password"]},
+    )
+    assert login_resp.status_code == 200
+    token_data = login_resp.json()
+    return {**user.to_dict(), "access_token": token_data["access_token"]}
 
 
 def auth_headers(token: str) -> dict:

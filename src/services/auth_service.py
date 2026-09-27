@@ -27,6 +27,7 @@ from src.models.user import (
     UserLoginRequest,
     UserRecord,
     UserRegisterRequest,
+    UserRole,
 )
 
 logger = logging.getLogger("aegisdev.auth_service")
@@ -36,14 +37,11 @@ logger = logging.getLogger("aegisdev.auth_service")
 # ---------------------------------------------------------------------------
 _raw_secret: Optional[str] = os.getenv("JWT_SECRET")
 if not _raw_secret:
-    if os.getenv("VERCEL"):
-        _raw_secret = "aegisdev-production-secure-32bytes-jwt-secret-key-xyz987!"
-    else:
-        raise EnvironmentError(
-            "JWT_SECRET environment variable is not set. "
-            "Generate a safe value with: "
-            "python -c \"import secrets; print(secrets.token_hex(32))\""
-        )
+    raise EnvironmentError(
+        "JWT_SECRET environment variable is not set. "
+        "Generate a safe value with: "
+        "python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
 JWT_SECRET: str = _raw_secret
 
 JWT_ALGORITHM: str = "HS256"
@@ -138,26 +136,58 @@ def register_user(req: UserRegisterRequest) -> UserRecord:
     Raises:
         ValueError: if the username or e-mail is already taken.
     """
-    key = req.username.lower()
+    return _create_user_internal(
+        username=req.username,
+        email=req.email,
+        password=req.password,
+        role=UserRole.DEVELOPER,
+    )
+
+
+def _create_user_internal(
+    username: str,
+    email: str,
+    password: str,
+    role: UserRole = UserRole.DEVELOPER,
+) -> UserRecord:
+    key = username.lower()
     with _STORE_LOCK:
         if key in _USER_STORE:
-            raise ValueError(f"Username '{req.username}' is already taken.")
+            raise ValueError(f"Username '{username}' is already taken.")
 
-        email_lower = req.email.lower()
+        email_lower = email.lower()
         if any(u.email.lower() == email_lower for u in _USER_STORE.values()):
-            raise ValueError(f"E-mail '{req.email}' is already registered.")
+            raise ValueError(f"E-mail '{email}' is already registered.")
 
-        hashed = _hash_password(req.password)
+        hashed = _hash_password(password)
         user = UserRecord(
-            username=req.username,
-            email=req.email,
+            username=username,
+            email=email,
             hashed_password=hashed,
-            role=req.role,
+            role=role,
         )
         _USER_STORE[key] = user
 
-    logger.info("Registered new user: %s (%s)", user.username, user.id)
+    logger.info("Created user: %s (%s, role=%s)", user.username, user.id, role.value)
     return user
+
+
+def seed_user(
+    username: str,
+    email: str,
+    password: str,
+    role: UserRole = UserRole.DEVELOPER,
+) -> UserRecord:
+    """
+    Internal/Bootstrap only: seed administrative or service accounts.
+    Cannot be invoked from public unauthenticated HTTP endpoints.
+    """
+    return _create_user_internal(
+        username=username,
+        email=email,
+        password=password,
+        role=role,
+    )
 
 
 def authenticate_user(req: UserLoginRequest) -> TokenResponse:

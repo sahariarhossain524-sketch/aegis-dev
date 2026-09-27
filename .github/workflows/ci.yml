@@ -63,9 +63,14 @@ jobs:
 
       - name: Verify no hardcoded secrets (grep guard)
         run: |
-          # Fail if the known bad fallback secret appears anywhere in src/
-          if grep -r "aegisdev-super-secret-do-not-use-in-prod" src/; then
+          # Fail if any hardcoded secret fallback pattern appears in src/
+          if grep -r -i "aegisdev-production-secure" src/ || grep -r "aegisdev-super-secret" src/; then
             echo "::error::Hardcoded JWT secret fallback detected in src/"
+            exit 1
+          fi
+          # Verify auth_service does not use setdefault fallback for JWT_SECRET
+          if grep -n "setdefault.*JWT_SECRET" src/services/auth_service.py; then
+            echo "::error::JWT_SECRET fallback setdefault detected in auth_service.py"
             exit 1
           fi
           echo "No hardcoded secrets found."
@@ -216,19 +221,19 @@ jobs:
           print(f'SARIF OK: {len(rules)} rules, {len(results)} results')
           "
 
-      - name: Verify all 10 TD findings are present in SARIF
+      - name: Verify all 11 TD findings are present in SARIF
         run: |
           python -c "
           import json, sys, pathlib
           data = json.loads(pathlib.Path('reports/security-audit.sarif').read_text())
           results = data['runs'][0]['results']
           rule_ids = {r['ruleId'] for r in results}
-          expected = {f'AEGIS-TD-{i:02d}' for i in range(1, 11)}
+          expected = {f'AEGIS-TD-{i:02d}' for i in range(1, 12)}
           missing = expected - rule_ids
           if missing:
               print(f'::error::Missing SARIF findings: {missing}')
               sys.exit(1)
-          print(f'All 10 TD findings present in SARIF: {sorted(rule_ids)}')
+          print(f'All 11 TD findings present in SARIF: {sorted(rule_ids)}')
           "
 
       - name: Verify no CRITICAL findings remain open (post-remediation check)

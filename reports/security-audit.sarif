@@ -99,6 +99,15 @@
               "helpUri": "https://cwe.mitre.org/data/definitions/521.html",
               "properties": { "tags": ["security", "CWE-521", "OWASP-ASVS-2.1.1", "severity:medium"] },
               "defaultConfiguration": { "level": "note" }
+            },
+            {
+              "id": "AEGIS-TD-11",
+              "name": "RegistrationPrivilegeEscalation",
+              "shortDescription": { "text": "Public registration allows self-assigned Admin role (CWE-269)" },
+              "fullDescription": { "text": "UserRegisterRequest permitted callers to supply a 'role' parameter in the JSON payload, allowing unauthenticated attackers to self-assign Admin privileges upon registration." },
+              "helpUri": "https://cwe.mitre.org/data/definitions/269.html",
+              "properties": { "tags": ["security", "CWE-269", "OWASP-ASVS-4.1.1", "severity:critical"] },
+              "defaultConfiguration": { "level": "error" }
             }
           ]
         }
@@ -243,6 +252,20 @@
             }
           ],
           "fingerprints": { "primaryLocationLineHash": "td10-models-user-113" }
+        },
+        {
+          "ruleId": "AEGIS-TD-11",
+          "level": "error",
+          "message": { "text": "Public /auth/register accepts a 'role' field, allowing self-registration of Admin accounts (CWE-269). Public registrations must strictly create developer accounts and forbid extra fields." },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/models/user.py" },
+                "region": { "startLine": 110, "startColumn": 5, "endLine": 115, "endColumn": 45 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "td11-models-user-110" }
         }
       ],
       "artifacts": [
@@ -261,8 +284,8 @@
           "commandLine": "aegisdev-auditor scan src/",
           "properties": {
             "auditStandard": "OWASP ASVS 4.0",
-            "findingsCount": 10,
-            "criticalCount": 2,
+            "findingsCount": 11,
+            "criticalCount": 3,
             "highCount": 3,
             "mediumCount": 3,
             "lowCount": 2

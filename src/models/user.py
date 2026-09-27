@@ -122,10 +122,11 @@ _PASSWORD_SPECIAL_RE = re.compile(r'[^A-Za-z0-9]')
 
 
 class UserRegisterRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
     username: str = Field(..., min_length=3, max_length=32)
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
-    role: UserRole = UserRole.DEVELOPER
 
     @field_validator("username")
     @classmethod

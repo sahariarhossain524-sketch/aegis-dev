@@ -8,8 +8,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-# Set runtime defaults for Vercel Serverless environment
-os.environ.setdefault("JWT_SECRET", "aegisdev-production-secure-32bytes-jwt-secret-key-xyz987!")
+# Set runtime defaults
 os.environ.setdefault("ALLOWED_ORIGINS", "*")
 os.environ.setdefault("APP_ENV", "production")
 

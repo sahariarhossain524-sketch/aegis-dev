@@ -56,15 +56,22 @@ class TestRegistration:
         assert resp.status_code == 409
         assert "already registered" in resp.json()["detail"].lower()
 
-    def test_register_admin_role(self, client: TestClient):
-        resp = client.post("/auth/register", json=BOB_ADMIN_CREDS)
-        assert resp.status_code == 201
-        assert resp.json()["role"] == "admin"
+    def test_register_cannot_self_assign_admin_role(self, client: TestClient):
+        """
+        FIX CWE-269: Public registration must reject role tampering.
+        Passing 'role': 'admin' must fail with 422 Unprocessable Content.
+        """
+        payload = {**BOB_ADMIN_CREDS, "role": "admin"}
+        resp = client.post("/auth/register", json=payload)
+        assert resp.status_code == 422, "Role escalation in registration must be rejected"
 
-    def test_register_viewer_role(self, client: TestClient):
-        resp = client.post("/auth/register", json=CHARLIE_VIEWER_CREDS)
+    def test_register_always_creates_developer_role(self, client: TestClient):
+        """
+        All public accounts registered through /auth/register are granted DEVELOPER role.
+        """
+        resp = client.post("/auth/register", json=ALICE_CREDS)
         assert resp.status_code == 201
-        assert resp.json()["role"] == "viewer"
+        assert resp.json()["role"] == "developer"
 
     def test_register_missing_required_fields_returns_422(self, client: TestClient):
         resp = client.post("/auth/register", json={"username": "only"})
@@ -140,7 +147,6 @@ class TestPasswordPolicy:
             "username": f"valpwduser{suffix}",
             "email": f"valpwduser{suffix}@test.com",
             "password": password,
-            "role": "developer",
         }
         resp = client.post("/auth/register", json=payload)
         assert resp.status_code == 201, f"Expected 201 for password '{password}': {resp.json()}"

@@ -4,7 +4,7 @@
 > **Standard:** OWASP Application Security Verification Standard (ASVS) 4.0  
 > **Codebase:** `src/` — AegisDev FastAPI Microservice  
 > **Machine-readable output:** `reports/security-audit.sarif` (SARIF 2.1.0)  
-> **Status:** ✅ All 10 findings remediated
+> **Status:** ✅ All 11 findings remediated
 
 ---
 
@@ -12,13 +12,13 @@
 
 | Severity | Found | Remediated |
 |---|---|---|
-| 🔴 Critical | 2 | 2 |
+| 🔴 Critical | 3 | 3 |
 | 🟠 High | 3 | 3 |
 | 🟡 Medium | 3 | 3 |
 | 🔵 Low | 2 | 2 |
-| **Total** | **10** | **10** |
+| **Total** | **11** | **11** |
 
-**Risk posture before remediation:** The service contained two critical vulnerabilities that would allow complete authentication bypass (any attacker knowing the hardcoded secret can forge arbitrary JWTs) and offline password cracking of all stored credentials within minutes. Three high-severity issues exposed timing oracles and persistent data loss. All issues have been resolved in the autonomous refactoring pass.
+**Risk posture before remediation:** The service contained critical vulnerabilities that would allow authentication bypass, unauthenticated privilege escalation to Admin via self-registration, and offline password cracking of stored credentials. High-severity issues exposed timing oracles, race conditions, and session hijacking risks. All 11 issues have been resolved in the autonomous refactoring pass.
 
 ---
 
@@ -341,6 +341,41 @@ def password_complexity(cls, v: str) -> str:
 
 ---
 
+### TD-11 — Public Registration Privilege Escalation (Self-Assigned Admin Role)
+
+| Field | Value |
+|---|---|
+| **Severity** | 🔴 Critical |
+| **CWE** | [CWE-269: Improper Privilege Management](https://cwe.mitre.org/data/definitions/269.html) |
+| **OWASP ASVS** | 4.1.1 — Verify that the application enforces access control rules |
+| **File** | `src/models/user.py` & `src/services/auth_service.py` |
+| **SARIF Rule** | `AEGIS-TD-11` |
+
+**Vulnerable code:**
+```python
+class UserRegisterRequest(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    role: UserRole = UserRole.DEVELOPER  # Allowed client to send "role": "admin"
+```
+
+**Impact:** An unauthenticated user could self-register with `"role": "admin"` to acquire administrative privileges across the entire microservice, accessing all users and resources.
+
+**Remediation Blueprint:**
+```python
+class UserRegisterRequest(BaseModel):
+    model_config = {"extra": "forbid"}  # Immediately rejects 'role' with HTTP 422
+    username: str
+    email: EmailStr
+    password: str
+    # role field removed completely from public registration schema
+```
+
+**Status:** ✅ Fixed — `role` parameter removed from `UserRegisterRequest`, `extra="forbid"` configured to reject role tampering attempts with HTTP 422, and all public registrations strictly create `developer` accounts.
+
+---
+
 ## OWASP ASVS Coverage Matrix
 
 | ASVS Control | Finding | Status |
@@ -350,6 +385,7 @@ def password_complexity(cls, v: str) -> str:
 | V2.4.1 — Adaptive password hashing | TD-02 | ✅ |
 | V2.10.4 — No hard-coded credentials | TD-01 | ✅ |
 | V3.3.1 — Session revocation | TD-03 | ✅ |
+| V4.1.1 — Access control & privilege escalation | TD-11 | ✅ |
 | V5.3.4 — Parameterised data queries | TD-07 | ✅ |
 | V6.2.1 — Cryptographic data protection | TD-04, TD-06 | ✅ |
 | V7.4.1 — Generic error messages | TD-09 | ✅ |
@@ -369,4 +405,4 @@ All fixes were applied autonomously by the AegisDev Refactoring Agent. Post-reme
 ✅  src/models/user.py                — AST parse OK
 ```
 
-**10 / 10 findings resolved. Zero new issues introduced.**
+**11 / 11 findings resolved. Zero new issues introduced.**

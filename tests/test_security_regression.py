@@ -591,3 +591,37 @@ class TestTD10PasswordComplexity:
         assert resp.status_code == 201, (
             f"Expected 201 for strong password '{password}': {resp.json()}"
         )
+
+
+# ===========================================================================
+# TD-11 — CWE-269: Privilege Escalation (Public Registration Role Tampering)
+# ===========================================================================
+
+class TestTD11PrivilegeEscalation:
+
+    def test_registration_with_admin_role_is_rejected(self, client: TestClient):
+        """
+        Public self-registration must not permit setting role to admin.
+        Passing 'role': 'admin' must trigger 422 Unprocessable Content.
+        """
+        payload = {
+            "username": "hacker_admin",
+            "email": "hacker@test.com",
+            "password": "StrongPassword123!",
+            "role": "admin",
+        }
+        resp = client.post("/auth/register", json=payload)
+        assert resp.status_code == 422, "Role tampering must be rejected"
+
+    def test_registered_user_always_defaults_to_developer(self, client: TestClient):
+        """
+        Standard public registration creates accounts with developer role only.
+        """
+        payload = {
+            "username": "legit_dev",
+            "email": "dev@test.com",
+            "password": "StrongPassword123!",
+        }
+        resp = client.post("/auth/register", json=payload)
+        assert resp.status_code == 201
+        assert resp.json()["role"] == "developer"
